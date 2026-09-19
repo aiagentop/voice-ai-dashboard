@@ -138,12 +138,16 @@ export async function sendEmail(args: {
   ctaUrl?: string
 }) {
   const resend = resendClient()
-  return resend.emails.send({
+  const { data, error } = await resend.emails.send({
     from: FROM,
     to: args.to,
     subject: args.subject,
     html: shell(args),
   })
+  if (error) {
+    throw new Error(`Resend send failed: ${error.message}`)
+  }
+  return data
 }
 
 // New client onboarding / welcome.
