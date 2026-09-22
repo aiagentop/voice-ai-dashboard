@@ -2,6 +2,7 @@ import { NextResponse, type NextRequest } from 'next/server'
 import type Stripe from 'stripe'
 import { stripe, setDefaultPaymentMethodFromSetup } from '@/lib/stripe'
 import { createAdminClient } from '@/lib/supabase/admin'
+import { sendInvoiceEmail } from '@/lib/email'
 
 // Mirrors Stripe invoice state back into our `invoices` table.
 export async function POST(request: NextRequest) {
@@ -42,7 +43,7 @@ export async function POST(request: NextRequest) {
     const supabase = createAdminClient()
     const { data: client } = await supabase
       .from('clients')
-      .select('id')
+      .select('id, name')
       .eq('stripe_customer_id', inv.customer as string)
       .maybeSingle()
 
@@ -68,6 +69,37 @@ export async function POST(request: NextRequest) {
         await supabase.from('invoices').update(row).eq('id', existing.id)
       } else {
         await supabase.from('invoices').insert(row)
+      }
+
+      // Notify the client on payment — receipt-style, with a link to Stripe's
+      // hosted invoice for their records.
+      if (event.type === 'invoice.paid' && inv.hosted_invoice_url) {
+        try {
+          const { data: profiles } = await supabase
+            .from('profiles')
+            .select('email')
+            .eq('client_id', client.id)
+            .eq('role', 'client')
+          const periodLabel = inv.period_end
+            ? new Date(inv.period_end * 1000).toLocaleDateString('en-US', {
+                month: 'long',
+                year: 'numeric',
+              })
+            : 'this period'
+          for (const p of profiles ?? []) {
+            if (!p.email) continue
+            await sendInvoiceEmail({
+              to: p.email,
+              clientName: client.name,
+              amountCents: inv.amount_paid,
+              periodLabel,
+              invoiceUrl: inv.hosted_invoice_url,
+              status: 'paid',
+            })
+          }
+        } catch (e) {
+          console.error(`invoice email failed for invoice ${inv.id}`, e)
+        }
       }
     }
   }
