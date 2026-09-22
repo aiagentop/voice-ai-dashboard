@@ -40,7 +40,7 @@ export async function syncCalls(slug: string) {
   const admin = createAdminClient()
   const { data: client } = await admin
     .from('clients')
-    .select('id, rate_per_minute_cents, retell_api_key, retell_agent_id')
+    .select('id, rate_per_minute_cents, retell_api_key, retell_agent_id, created_at')
     .eq('slug', slug)
     .maybeSingle()
   if (!client) return
@@ -50,13 +50,21 @@ export async function syncCalls(slug: string) {
 
   const { data: pa } = await admin
     .from('pod_agents')
-    .select('retell_agent_id')
+    .select('retell_agent_id, created_at')
     .eq('client_id', client.id)
-  const agentIds = new Set<string>((pa ?? []).map((a) => a.retell_agent_id))
-  if (client.retell_agent_id) agentIds.add(client.retell_agent_id)
+
+  // Only pull calls from the moment each agent was actually connected to
+  // this pod — never history from before that, even if Retell has it.
+  const connectedAt = new Map<string, number>()
+  for (const a of pa ?? []) {
+    connectedAt.set(a.retell_agent_id, new Date(a.created_at).getTime())
+  }
+  if (client.retell_agent_id && !connectedAt.has(client.retell_agent_id)) {
+    connectedAt.set(client.retell_agent_id, new Date(client.created_at).getTime())
+  }
 
   const key = client.retell_api_key || process.env.RETELL_API_KEY!
-  for (const agentId of agentIds) {
+  for (const [agentId, since] of connectedAt) {
     try {
       const res = await fetch('https://api.retellai.com/v2/list-calls', {
         method: 'POST',
@@ -66,7 +74,8 @@ export async function syncCalls(slug: string) {
       })
       if (!res.ok) continue
       const calls = (await res.json()) as RetellCall[]
-      const rows = calls.map((c) => callToRow(c, client.id, client.rate_per_minute_cents))
+      const newCalls = calls.filter((c) => (c.start_timestamp ?? since) >= since)
+      const rows = newCalls.map((c) => callToRow(c, client.id, client.rate_per_minute_cents))
       if (rows.length) {
         await admin.from('calls').upsert(rows, { onConflict: 'retell_call_id' })
       }

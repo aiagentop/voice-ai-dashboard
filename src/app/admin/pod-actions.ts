@@ -304,7 +304,10 @@ export async function createClientPod(formData: FormData): Promise<void> {
     }
   }
 
-  // --- Backfill recent calls for each agent using the pod's key ---
+  // --- Backfill calls for each agent using the pod's key ---
+  // Only calls that start from the moment the agent is connected to this pod
+  // onward count — never history from before the pod existed.
+  const connectedAt = Date.now()
   if (retell_api_key) {
     for (const a of agents) {
       try {
@@ -321,8 +324,11 @@ export async function createClientPod(formData: FormData): Promise<void> {
         })
         if (res.ok) {
           const calls: RetellCall[] = await res.json()
-          if (calls.length) {
-            const rows = calls.map((c) =>
+          const newCalls = calls.filter(
+            (c) => (c.start_timestamp ?? connectedAt) >= connectedAt
+          )
+          if (newCalls.length) {
+            const rows = newCalls.map((c) =>
               callToRow(c, clientId, rate_per_minute_cents)
             )
             await admin
