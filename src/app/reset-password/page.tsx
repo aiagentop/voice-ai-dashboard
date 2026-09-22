@@ -20,7 +20,21 @@ export default function ResetPasswordPage() {
     const markReady = () => active && setStatus('ready')
 
     const code = new URLSearchParams(window.location.search).get('code')
-    if (code) supabase.auth.exchangeCodeForSession(code).catch(() => {})
+    if (code) {
+      supabase.auth.exchangeCodeForSession(code).catch(() => {})
+    } else {
+      // Older-style recovery links arrive as a URL hash fragment
+      // (#access_token=...&refresh_token=...&type=recovery). The
+      // @supabase/ssr browser client (unlike plain supabase-js) does not
+      // auto-detect a session from the hash, so it must be read and set
+      // manually — otherwise a perfectly fresh link looks "expired".
+      const hashParams = new URLSearchParams(window.location.hash.slice(1))
+      const access_token = hashParams.get('access_token')
+      const refresh_token = hashParams.get('refresh_token')
+      if (access_token && refresh_token) {
+        supabase.auth.setSession({ access_token, refresh_token }).catch(() => {})
+      }
+    }
 
     const { data: sub } = supabase.auth.onAuthStateChange((_e, session) => {
       if (session) markReady()
