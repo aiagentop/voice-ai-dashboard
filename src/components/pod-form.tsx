@@ -451,11 +451,21 @@ export function PodForm(props: PodFormProps) {
           <label className={labelCls}>Set a password</label>
           <input
             type="text"
+            name="pod-password"
+            autoComplete="off"
+            data-1p-ignore
+            data-lpignore="true"
+            data-bwignore
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             placeholder="Blank = send email invite"
             className={inputCls}
           />
+          {password && (
+            <p className="text-[11px] text-seal">
+              A password is set — no invite email will be sent. Clear this field to email an invite instead.
+            </p>
+          )}
         </div>
       )}
 
