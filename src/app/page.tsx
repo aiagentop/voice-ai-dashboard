@@ -13,8 +13,8 @@ export default async function Home() {
       <p className="mb-3 text-[11px] uppercase tracking-[0.3em] text-muted">
         Voice AI, resold simply
       </p>
-      <h1 className="font-serif text-5xl font-semibold tracking-tight text-ink">
-        Voice<span className="text-seal">Desk</span>
+      <h1 className="font-sans text-5xl font-bold tracking-tight text-ink">
+        Agentop
       </h1>
       <p className="mt-5 max-w-md leading-relaxed text-muted">
         Your clients see their calls. You set the rate. Billing runs itself.
