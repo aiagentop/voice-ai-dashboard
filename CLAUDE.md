@@ -1,4 +1,4 @@
-# VoiceDesk — guide for Claude Code
+# Agentop — guide for Claude Code
 
 This is a Next.js 16 multi-tenant dashboard for reselling Retell AI voice agents to clients.
 If you're helping someone set this up or extend it, start here. User-facing setup is in `README.md`.

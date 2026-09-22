@@ -74,7 +74,7 @@ export default function ResetPasswordPage() {
         <div className="mb-10 flex flex-col items-center gap-4 text-center">
           <Logo className="h-12 w-12" />
           <div className="space-y-1">
-            <p className="text-[11px] uppercase tracking-[0.25em] text-muted">VoiceDesk</p>
+            <p className="text-[11px] uppercase tracking-[0.25em] text-muted">Agentop</p>
             <h1 className="font-serif text-3xl font-semibold tracking-tight text-ink">
               New password
             </h1>

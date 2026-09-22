@@ -20,8 +20,13 @@ const zenSerif = Shippori_Mincho({
 });
 
 export const metadata: Metadata = {
-  title: "Voice AI Dashboard",
+  title: "Agentop",
   description: "Resell voice AI. Clients see their calls. You set the rate.",
+  openGraph: {
+    title: "Agentop",
+    description: "Resell voice AI. Clients see their calls. You set the rate.",
+    siteName: "Agentop",
+  },
 };
 
 export default function RootLayout({

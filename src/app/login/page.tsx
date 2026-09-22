@@ -18,7 +18,7 @@ export default function LoginPage() {
           <Logo className="h-12 w-12" />
           <div className="space-y-1">
             <p className="text-[11px] uppercase tracking-[0.25em] text-muted">
-              VoiceDesk
+              Agentop
             </p>
             <h1 className="font-serif text-3xl font-semibold tracking-tight text-ink">
               おかえり

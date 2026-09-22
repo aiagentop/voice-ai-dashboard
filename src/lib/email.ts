@@ -1,6 +1,6 @@
 import { Resend } from 'resend'
 
-const FROM = process.env.RESEND_FROM_EMAIL || 'VoiceDesk <noreply@oceansideaisolutions.com>'
+const FROM = process.env.RESEND_FROM_EMAIL || 'Agentop <noreply@agentop-ai.com>'
 
 export function resendClient() {
   return new Resend(process.env.RESEND_API_KEY!)
@@ -17,11 +17,11 @@ function shell(opts: {
 }) {
   const { heading, intro, bodyHtml = '', ctaText, ctaUrl, footnote } = opts
 
-  // Ensō-style circle logo mark — inline SVG, works in most email clients.
-  const enso = `<svg width="32" height="32" viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg" style="display:inline-block;vertical-align:middle;margin-right:8px"><circle cx="16" cy="16" r="12" fill="none" stroke="#b1442b" stroke-width="1.5" stroke-dasharray="70 6" stroke-linecap="round"/></svg>`
+  // Mark: minimal rounded square with a forward/automation chevron — matches public/logo.svg.
+  const enso = `<svg width="28" height="28" viewBox="0 0 28 28" xmlns="http://www.w3.org/2000/svg" style="display:inline-block;vertical-align:middle;margin-right:8px"><rect width="28" height="28" rx="7" fill="#201d16"/><path d="M10.5 8.5 L18 14 L10.5 19.5" stroke="#f7f3ea" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" fill="none"/></svg>`
 
-  // Wordmark: "Voice" in ink, "Desk" in vermilion seal color.
-  const wordmark = `<span style="font-family:Georgia,'Times New Roman',serif;font-size:17px;font-weight:600;letter-spacing:.02em;color:#201d16">Voice</span><span style="font-family:Georgia,'Times New Roman',serif;font-size:17px;font-weight:600;letter-spacing:.02em;color:#b1442b">Desk</span>`
+  // Wordmark: "Agentop", dark ink, clean sans — minimal modern lockup.
+  const wordmark = `<span style="font-family:Helvetica,Arial,sans-serif;font-size:17px;font-weight:700;letter-spacing:-0.01em;color:#201d16">Agentop</span>`
 
   // Primary CTA button — ink background, a tiny vermilion seal dot before the label.
   const cta =
@@ -52,7 +52,7 @@ function shell(opts: {
 
   return `<!doctype html>
 <html lang="en">
-<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>VoiceDesk</title></head>
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Agentop</title></head>
 <body style="margin:0;padding:0;background-color:#efe9da;font-family:Helvetica,Arial,sans-serif;color:#201d16">
   <!--[if mso]><table role="presentation" width="100%" cellpadding="0" cellspacing="0"><tr><td align="center"><![endif]-->
   <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background-color:#efe9da;min-width:100%">
@@ -80,7 +80,7 @@ function shell(opts: {
           <!-- Eyebrow + Heading -->
           <tr>
             <td style="padding:36px 48px 0">
-              <div style="font-family:Helvetica,Arial,sans-serif;font-size:10px;letter-spacing:.22em;text-transform:uppercase;color:#b1442b;margin-bottom:12px">&#9642;&nbsp; VoiceDesk</div>
+              <div style="font-family:Helvetica,Arial,sans-serif;font-size:10px;letter-spacing:.22em;text-transform:uppercase;color:#b1442b;margin-bottom:12px">&#9642;&nbsp; Agentop</div>
               <h1 style="font-family:Georgia,'Times New Roman',serif;font-size:26px;font-weight:600;line-height:1.25;margin:0;color:#201d16">${heading}</h1>
             </td>
           </tr>
@@ -110,7 +110,7 @@ function shell(opts: {
                 <tr><td style="height:1px;background:rgba(32,29,22,.12);font-size:0;line-height:0">&nbsp;</td></tr>
               </table>
               <p style="margin:16px 0 0;font-family:Helvetica,Arial,sans-serif;font-size:11px;line-height:1.6;color:#7c7461">
-                Sent by <strong style="color:#7c7461">Voice<span style="color:#b1442b">Desk</span></strong>
+                Sent by <strong style="color:#7c7461">Agentop</strong>
                 &nbsp;&middot;&nbsp; You're receiving this because you have an account with us.
               </p>
             </td>

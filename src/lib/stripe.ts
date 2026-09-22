@@ -2,7 +2,7 @@ import Stripe from 'stripe'
 
 export const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!)
 
-const METER_EVENT = process.env.STRIPE_METER_EVENT || 'voicedesk_call_minutes'
+const METER_EVENT = process.env.STRIPE_METER_EVENT || 'agentop_call_minutes'
 
 // Create a Stripe customer for a client pod.
 export async function createCustomer(args: {

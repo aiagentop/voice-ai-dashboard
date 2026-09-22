@@ -1,4 +1,4 @@
-# VoiceDesk — Voice AI Client Dashboard
+# Agentop — Voice AI Client Dashboard
 
 A clean, multi-tenant dashboard for **reselling Retell AI** to clients. Clients log in and see
 their own calls, transcripts, recordings, usage, and invoices. You (the admin) manage client

@@ -1,0 +1,8 @@
+<svg width="216" height="48" viewBox="0 0 216 48" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Agentop">
+  <!-- Mark: minimal rounded square with a forward/automation chevron -->
+  <rect x="0" y="4" width="40" height="40" rx="10" fill="#1A1712"/>
+  <path d="M15 15 L27 24 L15 33" stroke="#ECE4D2" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+
+  <!-- Wordmark -->
+  <text x="52" y="32" font-family="-apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="26" font-weight="700" letter-spacing="-0.3" fill="#1A1712">Agentop</text>
+</svg>
