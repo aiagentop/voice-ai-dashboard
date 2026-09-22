@@ -9,6 +9,10 @@ export async function proxy(request: NextRequest) {
 
 export const config = {
   // Run on everything except API routes (they handle their own auth/webhooks),
-  // static assets, and image files.
-  matcher: ['/((?!api|_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)'],
+  // static assets, image files, and the public SEO files the landing page
+  // serves (robots.txt/sitemap.xml — these must stay reachable by crawlers
+  // without being redirected to /login).
+  matcher: [
+    '/((?!api|_next/static|_next/image|favicon.ico|robots.txt|sitemap.xml|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)',
+  ],
 }
