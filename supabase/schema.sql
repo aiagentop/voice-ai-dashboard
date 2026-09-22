@@ -23,7 +23,17 @@ create table public.clients (
   stripe_customer_id      text,
   stripe_subscription_id  text,
   status                  text        not null default 'active', -- active | paused | archived
+  retell_api_key          text,                                  -- pod's own Retell key; falls back to RETELL_API_KEY
   created_at              timestamptz not null default now()
+);
+
+-- ----- 1b. pod_agents (a pod can own more than one Retell agent) --
+create table public.pod_agents (
+  id               uuid primary key default gen_random_uuid(),
+  client_id        uuid not null references public.clients (id) on delete cascade,
+  retell_agent_id  text not null unique,
+  agent_name       text,
+  created_at       timestamptz not null default now()
 );
 
 -- ----- 2. profiles (who can log in; links auth.users -> a client)
@@ -40,6 +50,7 @@ create table public.calls (
   id                uuid primary key default gen_random_uuid(),
   client_id         uuid not null references public.clients (id) on delete cascade,
   retell_call_id    text not null unique,            -- UNIQUE = idempotency, never double-insert a call
+  call_type         text,                            -- e.g. 'phone_call' | 'web_call'
   started_at        timestamptz,
   duration_seconds  integer     not null default 0,
   cost_cents        numeric(12,4) not null default 0,  -- our Retell cost for this call
@@ -92,6 +103,7 @@ create or replace function public.is_admin()
 $$;
 
 alter table public.clients      enable row level security;
+alter table public.pod_agents   enable row level security;
 alter table public.profiles     enable row level security;
 alter table public.calls        enable row level security;
 alter table public.invoices     enable row level security;
@@ -99,16 +111,18 @@ alter table public.usage_events enable row level security;
 
 -- admins: full access to everything
 create policy admin_all_clients      on public.clients      for all using (public.is_admin()) with check (public.is_admin());
+create policy admin_all_pod_agents   on public.pod_agents    for all using (public.is_admin()) with check (public.is_admin());
 create policy admin_all_profiles     on public.profiles     for all using (public.is_admin()) with check (public.is_admin());
 create policy admin_all_calls        on public.calls        for all using (public.is_admin()) with check (public.is_admin());
 create policy admin_all_invoices     on public.invoices     for all using (public.is_admin()) with check (public.is_admin());
 create policy admin_all_usage        on public.usage_events for all using (public.is_admin()) with check (public.is_admin());
 
 -- clients: read ONLY their own pod's data
-create policy client_read_own_client   on public.clients      for select using (id = public.current_client_id());
-create policy client_read_own_profile  on public.profiles     for select using (id = auth.uid());
-create policy client_read_own_calls    on public.calls        for select using (client_id = public.current_client_id());
-create policy client_read_own_invoices on public.invoices     for select using (client_id = public.current_client_id());
+create policy client_read_own_client     on public.clients      for select using (id = public.current_client_id());
+create policy client_read_own_pod_agents on public.pod_agents   for select using (client_id = public.current_client_id());
+create policy client_read_own_profile    on public.profiles     for select using (id = auth.uid());
+create policy client_read_own_calls      on public.calls        for select using (client_id = public.current_client_id());
+create policy client_read_own_invoices   on public.invoices     for select using (client_id = public.current_client_id());
 
 -- NOTE: webhooks (Retell/Stripe) write using the service-role key, which BYPASSES RLS by design.
 -- Clients have NO insert/update/delete policies, so they can only ever read their own rows.

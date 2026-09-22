@@ -62,7 +62,10 @@ export async function POST(request: NextRequest) {
   const { error } = await supabase
     .from('calls')
     .upsert(row, { onConflict: 'retell_call_id' })
-  if (error) return new NextResponse(error.message, { status: 500 })
+  if (error) {
+    console.error(`[retell webhook] upsert failed for call ${call.call_id}:`, error.message)
+    return new NextResponse(error.message, { status: 500 })
+  }
 
   if (event === 'call_ended' && client.stripe_customer_id) {
     try {
