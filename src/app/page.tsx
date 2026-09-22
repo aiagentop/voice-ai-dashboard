@@ -1,58 +1,79 @@
-import Link from 'next/link'
-import { getProfile } from '@/lib/auth'
-import { Logo } from '@/components/brand'
-import { SignOut } from '@/components/sign-out'
+import type { Metadata } from 'next'
+import { landingConfig } from '@/lib/landing-config'
+import { Navbar } from '@/components/landing/Navbar'
+import { Hero } from '@/components/landing/Hero'
+import { TrustBar } from '@/components/landing/TrustBar'
+import { Problem } from '@/components/landing/Problem'
+import { Services } from '@/components/landing/Services'
+import { VoiceDemo } from '@/components/landing/VoiceDemo'
+import { Outcomes } from '@/components/landing/Outcomes'
+import { Process } from '@/components/landing/Process'
+import { UseCases } from '@/components/landing/UseCases'
+import { Integrations } from '@/components/landing/Integrations'
+import { Pricing } from '@/components/landing/Pricing'
+import { FAQ } from '@/components/landing/FAQ'
+import { DemoForm } from '@/components/landing/DemoForm'
+import { SectionHeading } from '@/components/landing/ui/SectionHeading'
+import { CTA } from '@/components/landing/CTA'
+import { Footer } from '@/components/landing/Footer'
 
-export default async function Home() {
-  const profile = await getProfile()
+export const metadata: Metadata = {
+  title: 'Agentop — AI Voice Agents That Work 24/7',
+  description:
+    'Agentop builds intelligent AI voice agents for U.S. service businesses. Automate calls, qualify leads, book appointments, and never miss a customer again.',
+  alternates: { canonical: landingConfig.url },
+  openGraph: {
+    title: 'Agentop — AI Voice Agents That Work 24/7',
+    description:
+      'Agentop builds intelligent AI voice agents for U.S. service businesses. Automate calls, qualify leads, book appointments, and never miss a customer again.',
+    url: landingConfig.url,
+    siteName: 'Agentop',
+    type: 'website',
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'Agentop — AI Voice Agents That Work 24/7',
+    description:
+      'Agentop builds intelligent AI voice agents for U.S. service businesses. Automate calls, qualify leads, book appointments, and never miss a customer again.',
+  },
+}
 
+export default function Home() {
   return (
-    <main className="relative flex min-h-screen flex-col items-center justify-center bg-paper p-8 text-center">
-      <Logo className="mb-8 h-16 w-16" />
+    <div className="agentop-landing min-h-screen">
+      <Navbar />
+      <main>
+        <Hero />
+        <TrustBar />
+        <Problem />
+        <Services />
+        <VoiceDemo />
+        <Outcomes />
+        <Process />
+        <UseCases />
+        <Integrations />
+        <Pricing />
+        <FAQ />
 
-      <p className="mb-3 text-[11px] uppercase tracking-[0.3em] text-muted">
-        Voice AI, resold simply
-      </p>
-      <h1 className="font-sans text-5xl font-bold tracking-tight text-ink">
-        Agentop
-      </h1>
-      <p className="mt-5 max-w-md leading-relaxed text-muted">
-        Your clients see their calls. You set the rate. Billing runs itself.
-        Nothing more than it needs to be.
-      </p>
-
-      <div className="my-9 h-px w-16 bg-ink/20" />
-
-      {profile ? (
-        <div className="flex flex-col items-center gap-5">
-          <p className="text-sm text-muted">
-            Signed in as <span className="text-ink">{profile.email}</span>
-            <span className="ml-2 border border-ink/15 px-2 py-0.5 text-[11px] uppercase tracking-wider text-muted">
-              {profile.role}
-            </span>
-          </p>
-          <div className="flex gap-3">
-            {profile.role === 'admin' && (
-              <Link
-                href="/admin"
-                className="group relative bg-ink px-6 py-3 text-sm font-medium tracking-wide text-card transition hover:bg-ink/90"
-              >
-                Enter admin
-                <span className="absolute right-4 top-1/2 h-1.5 w-1.5 -translate-y-1/2 rounded-full bg-seal" />
-              </Link>
-            )}
-            <SignOut className="border border-ink/20 bg-transparent px-6 py-3 text-sm font-medium tracking-wide text-ink transition hover:bg-card" />
+        {/* ======================================== */}
+        {/* LEAD CAPTURE — primary conversion section */}
+        {/* ======================================== */}
+        <section id="demo-form" className="py-24 md:py-32">
+          <div className="mx-auto max-w-7xl px-6 lg:px-8">
+            <SectionHeading
+              eyebrow="Get started"
+              title="Have my AI call me now."
+              subtitle="Fill in your details. Your AI agent calls you within seconds and does a live demo — acting as a receptionist for your business."
+            />
+            <div className="mt-12">
+              <DemoForm />
+            </div>
           </div>
-        </div>
-      ) : (
-        <Link
-          href="/login"
-          className="group relative bg-ink px-8 py-3.5 text-sm font-medium tracking-wide text-card transition hover:bg-ink/90"
-        >
-          Sign in
-          <span className="absolute right-5 top-1/2 h-1.5 w-1.5 -translate-y-1/2 rounded-full bg-seal" />
-        </Link>
-      )}
-    </main>
+        </section>
+
+        <CTA />
+      </main>
+      <Footer />
+    </div>
   )
 }

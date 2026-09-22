@@ -20,6 +20,17 @@
   --font-sans: var(--font-geist-sans);
   --font-serif: var(--font-zen);
   --font-mono: var(--font-geist-mono);
+
+  /* Landing-page dark palette — additive, scoped to .agentop-landing only.
+     Never used by /admin or /[slug], which keep the warm zen palette above. */
+  --color-void: #05070b;
+  --color-void-surface: #0a0f17;
+  --color-void-surface-2: #111827;
+  --color-void-border: rgba(255, 255, 255, 0.08);
+  --color-void-fg: #f8fafc;
+  --color-void-muted: #94a3b8;
+  --color-void-accent: #38bdf8;
+  --color-void-accent-2: #6366f1;
 }
 
 html {
@@ -110,4 +121,43 @@ body::after {
   pointer-events: none;
   opacity: 0.035;
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+
+/* ============================================================
+   LANDING PAGE — dark theme override.
+   Scoped with :has() so html/body only switch to the dark
+   palette when the landing root is actually in the tree; every
+   other route (/admin, /[slug], auth) keeps the warm zen theme
+   above completely untouched.
+   ============================================================ */
+html:has(.agentop-landing) {
+  background: var(--color-void);
+}
+body:has(.agentop-landing) {
+  color: var(--color-void-fg);
+}
+body:has(.agentop-landing)::after {
+  content: none;
+}
+
+.agentop-landing {
+  background: var(--color-void);
+  color: var(--color-void-fg);
+}
+
+/* Subtle static grid, used behind the hero/background system */
+.agentop-grid {
+  background-image:
+    linear-gradient(to right, rgba(255, 255, 255, 0.05) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(255, 255, 255, 0.05) 1px, transparent 1px);
+  background-size: 64px 64px;
+  mask-image: radial-gradient(ellipse 80% 60% at 50% 0%, black 40%, transparent 90%);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .agentop-landing * {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+  }
 }
