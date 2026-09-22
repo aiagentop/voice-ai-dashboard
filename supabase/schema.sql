@@ -89,6 +89,31 @@ create table public.usage_events (
 );
 
 -- ============================================================
+--  HARD CONSTRAINT — a call can never predate the pod it belongs to.
+--  Enforced here (not just in app code) so no code path — a bug in
+--  the backfill/sync logic, a direct API call, a future feature —
+--  can ever let a client see calls from before their pod existed.
+-- ============================================================
+create or replace function public.enforce_call_after_pod_creation()
+returns trigger language plpgsql as $$
+declare
+  pod_created_at timestamptz;
+begin
+  select created_at into pod_created_at from public.clients where id = new.client_id;
+  if pod_created_at is not null and new.started_at is not null and new.started_at < pod_created_at then
+    raise exception
+      'call % starts at % which is before pod % was created (%) — rejected',
+      new.retell_call_id, new.started_at, new.client_id, pod_created_at;
+  end if;
+  return new;
+end;
+$$;
+
+create trigger calls_enforce_pod_connection
+  before insert or update on public.calls
+  for each row execute function public.enforce_call_after_pod_creation();
+
+-- ============================================================
 --  ROW-LEVEL SECURITY  — this is what walls each client off.
 --  security-definer helpers avoid recursive policy checks.
 -- ============================================================
