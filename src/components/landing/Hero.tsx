@@ -8,20 +8,15 @@
 // restrained — this is the highest-animation-priority element on the
 // page, but it should still read as calm and premium.
 
-import dynamic from 'next/dynamic'
 import { motion } from 'framer-motion'
 import { Check, Phone } from 'lucide-react'
 import { landingConfig, cta } from '@/lib/landing-config'
 import { ButtonLink } from './ui/Button'
 import { Glow } from './ui/Glow'
 
-// Heavy (three.js) and browser-only — never part of the initial bundle,
-// never server-rendered. Hero's text/CTAs above render immediately
-// regardless of how long this takes to load.
-const GalaxyBackground = dynamic(
-  () => import('./motion/GalaxyBackground').then((m) => m.GalaxyBackground),
-  { ssr: false }
-)
+// The galaxy is now a whole-site background (see
+// GalaxyBackgroundLoader in page.tsx), not scoped to the Hero — this
+// section just adds a couple of local accent glows on top of it.
 
 const waveformBars = [6, 14, 22, 12, 26, 10, 18, 24, 8, 16, 20, 12, 6]
 
@@ -105,11 +100,6 @@ function CallCard() {
 export function Hero() {
   return (
     <section id="top" className="relative overflow-hidden pt-40 pb-24 md:pt-48 md:pb-32">
-      <div className="absolute inset-0">
-        <GalaxyBackground />
-      </div>
-      {/* Left-side scrim so the headline stays readable over the galaxy */}
-      <div className="absolute inset-0 bg-gradient-to-r from-void via-void/70 to-transparent md:from-void md:via-void/40 md:to-transparent" />
       <Glow className="-left-40 top-10 h-[420px] w-[420px]" />
       <Glow className="-right-40 top-40 h-[420px] w-[420px]" color="var(--color-void-accent-2)" />
 

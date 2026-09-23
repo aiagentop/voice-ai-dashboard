@@ -5,31 +5,22 @@
 // ========================================
 // Real HTML cards (glassy, glowing in their category color) placed in
 // 3D space with three.js's CSS3DRenderer — same technique as the
-// periodic-table example. Layout auto-cycles table → sphere → helix →
-// grid, pausing on hover/drag. Dragging only responds to mouse input,
+// periodic-table example. Layout auto-cycles sphere <-> helix every
+// 3s, pausing on hover/drag. Dragging only responds to mouse input,
 // so it can never intercept a touch scroll.
 
 import { useEffect, useRef } from 'react'
 import { agentLibrary, agentLibraryCategories, type AgentLibraryCategory } from '@/lib/landing-config'
 
-const LAYOUTS = ['table', 'sphere', 'helix', 'grid'] as const
+const LAYOUTS = ['sphere', 'helix'] as const
 type Layout = (typeof LAYOUTS)[number]
 
-const CYCLE_MS_MIN = 3600
-const CYCLE_MS_MAX = 6800
-const TWEEN_MS = 1400
-const TABLE_COLS = 6
-const COL_SPACING = 165
-const ROW_SPACING = 215
-const SPHERE_RADIUS = 900
-const HELIX_RADIUS = 950
-const HELIX_Y_STEP = 78
+const CYCLE_MS = 3000
+const TWEEN_MS = 1200
+const SPHERE_RADIUS = 820
+const HELIX_RADIUS = 820
+const HELIX_Y_STEP = 100
 const HELIX_THETA_STEP = 0.5
-const GRID_SPACING = 240
-
-function nextCycleDelay() {
-  return CYCLE_MS_MIN + Math.random() * (CYCLE_MS_MAX - CYCLE_MS_MIN)
-}
 
 export function AgentLibrary({ className = '' }: { className?: string }) {
   const mountRef = useRef<HTMLDivElement>(null)
@@ -53,7 +44,7 @@ export function AgentLibrary({ className = '' }: { className?: string }) {
 
       const scene = new THREE.Scene()
       const camera = new THREE.PerspectiveCamera(50, 1, 1, 6000)
-      camera.position.z = 2400
+      camera.position.z = 1650
 
       const renderer = new CSS3DRenderer()
       renderer.domElement.style.position = 'absolute'
@@ -65,12 +56,13 @@ export function AgentLibrary({ className = '' }: { className?: string }) {
 
       // ---- build one DOM card per library item ----------------------
       const objects: InstanceType<typeof CSS3DObject>[] = []
-      const targets = { table: [] as InstanceType<typeof THREE.Vector3>[], sphere: [] as InstanceType<typeof THREE.Vector3>[], helix: [] as InstanceType<typeof THREE.Vector3>[], grid: [] as InstanceType<typeof THREE.Vector3>[] }
-      const rotationTargets: Record<Layout, InstanceType<typeof THREE.Euler>[]> = {
-        table: [],
+      const targets: Record<Layout, InstanceType<typeof THREE.Vector3>[]> = {
         sphere: [],
         helix: [],
-        grid: [],
+      }
+      const rotationTargets: Record<Layout, InstanceType<typeof THREE.Euler>[]> = {
+        sphere: [],
+        helix: [],
       }
 
       const total = agentLibrary.length
@@ -89,18 +81,6 @@ export function AgentLibrary({ className = '' }: { className?: string }) {
         const object = new CSS3DObject(el)
         group.add(object)
         objects.push(object)
-
-        // Table: grouped by category, one row per category
-        const catIndex = Object.keys(agentLibraryCategories).indexOf(item.category)
-        const col = i % TABLE_COLS
-        targets.table.push(
-          new THREE.Vector3(
-            (col - (TABLE_COLS - 1) / 2) * COL_SPACING,
-            -(catIndex - 1.5) * ROW_SPACING,
-            0
-          )
-        )
-        rotationTargets.table.push(new THREE.Euler(0, 0, 0))
 
         // Sphere: even Fibonacci-style distribution, cards face outward
         const phi = Math.acos(-1 + (2 * i) / total)
@@ -125,19 +105,6 @@ export function AgentLibrary({ className = '' }: { className?: string }) {
         dummy2.position.copy(helixPos)
         dummy2.lookAt(new THREE.Vector3(helixPos.x * 2, helixPos.y, helixPos.z * 2))
         rotationTargets.helix.push(dummy2.rotation.clone())
-
-        // Grid: a true 3x4x2 volume
-        const gx = i % 3
-        const gy = Math.floor(i / 3) % 4
-        const gz = Math.floor(i / 12)
-        targets.grid.push(
-          new THREE.Vector3(
-            (gx - 1) * GRID_SPACING,
-            (1.5 - gy) * GRID_SPACING,
-            (gz - 0.5) * GRID_SPACING
-          )
-        )
-        rotationTargets.grid.push(new THREE.Euler(0, 0, 0))
       })
 
       function applyLayout(layout: Layout, animate: boolean) {
@@ -160,7 +127,7 @@ export function AgentLibrary({ className = '' }: { className?: string }) {
         })
       }
 
-      applyLayout('table', false)
+      applyLayout('sphere', false)
 
       // ---- sizing -----------------------------------------------------
       function resize() {
@@ -169,10 +136,9 @@ export function AgentLibrary({ className = '' }: { className?: string }) {
         camera.aspect = clientWidth / clientHeight
         camera.updateProjectionMatrix()
         renderer.setSize(clientWidth, clientHeight)
-        // Pull the camera back on narrow viewports so the widest layouts
-        // (sphere/helix) still fit inside the frame.
+        // Pull the camera back a bit on narrow viewports so nothing clips.
         const isMobile = clientWidth < 640
-        camera.position.z = isMobile ? 4000 : 3000
+        camera.position.z = isMobile ? 2100 : 1650
       }
       resize()
       const resizeObserver = new ResizeObserver(resize)
@@ -233,9 +199,7 @@ export function AgentLibrary({ className = '' }: { className?: string }) {
         mount.removeEventListener('mouseleave', onLeave)
       })
 
-      // ---- auto-cycle table -> sphere -> helix -> grid -> table ... -
-      // Each gap is a random duration (CYCLE_MS_MIN..MAX) rather than a
-      // fixed interval, so the cycle doesn't feel metronomic.
+      // ---- auto-cycle: sphere <-> helix, every CYCLE_MS --------------
       let layoutIndex = 0
       let cycleTimer: ReturnType<typeof setTimeout> | null = null
       let resumeTimer: ReturnType<typeof setTimeout> | null = null
@@ -259,7 +223,7 @@ export function AgentLibrary({ className = '' }: { className?: string }) {
           layoutIndex = (layoutIndex + 1) % LAYOUTS.length
           applyLayout(LAYOUTS[layoutIndex], true)
           tick()
-        }, nextCycleDelay())
+        }, CYCLE_MS)
       }
       function startCycle() {
         if (cycling || reducedMotion) return

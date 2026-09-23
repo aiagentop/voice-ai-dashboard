@@ -1,7 +1,7 @@
 'use client'
 
 // ========================================
-// GALAXY — Hero background
+// GALAXY — whole-site background
 // ========================================
 // A living spiral galaxy: 3 arms (Answer / Book / Follow up), a warm
 // core fading to the brand's deep blue. Built with three.js's
@@ -9,12 +9,16 @@
 // detection needed) and TSL node materials, so the same shader graph
 // compiles to WGSL or GLSL depending on what the browser supports.
 //
+// Mounted once, fixed behind the entire page (see GalaxyBackgroundLoader
+// in page.tsx) — not scoped to the Hero. A flat dark scrim sits between
+// this canvas and the page content so text stays readable everywhere.
+//
 // Perf/UX contract:
-// - Mounted only via next/dynamic({ssr:false}) from Hero.tsx.
-// - The render loop only runs while this section is intersecting the
-//   viewport AND the tab is visible; it's fully paused otherwise.
+// - The render loop only runs while the tab is visible; fully paused
+//   otherwise (there's no "in viewport" question — it's always the
+//   full viewport).
 // - prefers-reduced-motion: render one static frame, no listeners.
-// - Mobile (<768px): fewer particles, galaxy recentered.
+// - Mobile (<768px): fewer particles.
 
 import { useEffect, useRef } from 'react'
 
@@ -29,6 +33,7 @@ const RANDOMNESS = 0.55
 const RANDOMNESS_POWER = 3
 const INSIDE_COLOR = '#ffc48a' // warm core
 const OUTSIDE_COLOR = '#5b6bf2' // deep brand blue (~--color-void-accent-2)
+const BASE_SPEED = 0.045
 
 export function GalaxyBackground({ className = '' }: { className?: string }) {
   const containerRef = useRef<HTMLDivElement>(null)
@@ -83,13 +88,11 @@ export function GalaxyBackground({ className = '' }: { className?: string }) {
 
       const scene = new THREE.Scene()
       const camera = new THREE.PerspectiveCamera(45, 1, 0.1, 100)
-      const baseCameraX = isMobile ? 0 : 1.6
-      camera.position.set(baseCameraX, 2.2, 5.2)
-      camera.lookAt(isMobile ? 0 : 1.2, 0, 0)
+      camera.position.set(0, 2.2, 5.2)
+      camera.lookAt(0, 0, 0)
 
       const galaxyGroup = new THREE.Group()
       galaxyGroup.rotation.x = 0.35
-      galaxyGroup.position.x = baseCameraX
       scene.add(galaxyGroup)
 
       // ---- geometry: one attribute set per particle -----------------
@@ -182,41 +185,26 @@ export function GalaxyBackground({ className = '' }: { className?: string }) {
         renderer.setSize(clientWidth, clientHeight, false)
       }
       resize()
-      const resizeObserver = new ResizeObserver(resize)
-      resizeObserver.observe(container)
-      cleanupFns.push(() => resizeObserver.disconnect())
+      window.addEventListener('resize', resize)
+      cleanupFns.push(() => window.removeEventListener('resize', resize))
 
-      // ---- interaction state ---------------------------------------
+      // ---- interaction state (mouse parallax only — no scroll tie-in,
+      // this now sits behind the whole page, not just one section) ----
       let targetMouseX = 0
       let targetMouseY = 0
       let mouseX = 0
       let mouseY = 0
-      let scrollProgress = 0 // 0 = hero fully in view, 1 = fully scrolled past
 
       if (!reducedMotion && !isMobile) {
         const onMouseMove = (e: MouseEvent) => {
-          const rect = container.getBoundingClientRect()
-          targetMouseX = ((e.clientX - rect.left) / rect.width) * 2 - 1
-          targetMouseY = ((e.clientY - rect.top) / rect.height) * 2 - 1
+          targetMouseX = (e.clientX / window.innerWidth) * 2 - 1
+          targetMouseY = (e.clientY / window.innerHeight) * 2 - 1
         }
         window.addEventListener('mousemove', onMouseMove)
         cleanupFns.push(() => window.removeEventListener('mousemove', onMouseMove))
       }
 
-      if (!reducedMotion) {
-        const heroSection = container.closest('section')
-        const onScroll = () => {
-          if (!heroSection) return
-          const rect = heroSection.getBoundingClientRect()
-          const progress = 1 - Math.max(0, Math.min(1, rect.bottom / (rect.height + window.innerHeight * 0.5)))
-          scrollProgress = Math.max(0, Math.min(1, progress))
-        }
-        window.addEventListener('scroll', onScroll, { passive: true })
-        onScroll()
-        cleanupFns.push(() => window.removeEventListener('scroll', onScroll))
-      }
-
-      // ---- visibility gating (IntersectionObserver + tab visibility) --
+      // ---- render loop, gated on tab visibility only ------------------
       let running = false
       let rafId = 0
       let lastTime = performance.now()
@@ -226,17 +214,13 @@ export function GalaxyBackground({ className = '' }: { className?: string }) {
         const delta = Math.min((now - lastTime) / 1000, 0.1)
         lastTime = now
 
-        const speed = 0.06 * (1 + scrollProgress * 2.6)
-        uRotation.value += delta * speed
+        uRotation.value += delta * BASE_SPEED
 
         mouseX += (targetMouseX - mouseX) * 0.04
         mouseY += (targetMouseY - mouseY) * 0.04
-        camera.position.x = baseCameraX + mouseX * 0.42
+        camera.position.x = mouseX * 0.42
         camera.position.y = 2.2 - mouseY * 0.26
-
-        camera.position.z = 5.2 - scrollProgress * 1.47
-        galaxyGroup.rotation.x = 0.35 + scrollProgress * 0.37
-        camera.lookAt(baseCameraX, 0, 0)
+        camera.lookAt(0, 0, 0)
 
         renderer.render(scene, camera)
       }
@@ -255,23 +239,10 @@ export function GalaxyBackground({ className = '' }: { className?: string }) {
       if (reducedMotion) {
         renderer.render(scene, camera)
       } else {
-        const observer = new IntersectionObserver(
-          ([entry]) => {
-            if (entry.isIntersecting && document.visibilityState === 'visible') start()
-            else stop()
-          },
-          { threshold: 0.05 }
-        )
-        observer.observe(container)
-        cleanupFns.push(() => observer.disconnect())
-
+        start()
         const onVisibility = () => {
-          if (document.visibilityState !== 'visible') stop()
-          else if (
-            container.getBoundingClientRect().bottom > 0 &&
-            container.getBoundingClientRect().top < window.innerHeight
-          )
-            start()
+          if (document.visibilityState === 'visible') start()
+          else stop()
         }
         document.addEventListener('visibilitychange', onVisibility)
         cleanupFns.push(() => document.removeEventListener('visibilitychange', onVisibility))
