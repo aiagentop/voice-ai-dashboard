@@ -34,6 +34,8 @@ const RANDOMNESS_POWER = 3
 const INSIDE_COLOR = '#ffc48a' // warm core
 const OUTSIDE_COLOR = '#5b6bf2' // deep brand blue (~--color-void-accent-2)
 const BASE_SPEED = 0.045
+const SCROLL_BOOST = 0.00035 // extra spin per px/frame of scroll velocity
+const SCROLL_PARALLAX = 0.45 // max vertical camera drift (world units) from scroll position
 
 export function GalaxyBackground({ className = '' }: { className?: string }) {
   const containerRef = useRef<HTMLDivElement>(null)
@@ -171,7 +173,7 @@ export function GalaxyBackground({ className = '' }: { className?: string }) {
         return mix(insideColor, outsideColor, t)
       })()
 
-      material.scaleNode = attribute('aScale', 'float').mul(isMobile ? 0.095 : 0.115)
+      material.scaleNode = attribute('aScale', 'float').mul(isMobile ? 0.108 : 0.13)
 
       const points = new THREE.Points(geometry, material)
       galaxyGroup.add(points)
@@ -188,8 +190,10 @@ export function GalaxyBackground({ className = '' }: { className?: string }) {
       window.addEventListener('resize', resize)
       cleanupFns.push(() => window.removeEventListener('resize', resize))
 
-      // ---- interaction state (mouse parallax only — no scroll tie-in,
-      // this now sits behind the whole page, not just one section) ----
+      // ---- interaction state: mouse parallax + a scroll reaction —
+      // scrolling briefly speeds up the spin (velocity-based, decays
+      // back to base) and drifts the camera a touch, so the whole
+      // background feels alive as you move through the page. --------
       let targetMouseX = 0
       let targetMouseY = 0
       let mouseX = 0
@@ -204,6 +208,22 @@ export function GalaxyBackground({ className = '' }: { className?: string }) {
         cleanupFns.push(() => window.removeEventListener('mousemove', onMouseMove))
       }
 
+      let lastScrollY = window.scrollY
+      let scrollBoost = 0
+      let scrollDrift = 0
+
+      if (!reducedMotion) {
+        const onScroll = () => {
+          const y = window.scrollY
+          const velocity = y - lastScrollY
+          lastScrollY = y
+          scrollBoost += Math.abs(velocity)
+          scrollDrift = Math.max(-1, Math.min(1, y * 0.0015))
+        }
+        window.addEventListener('scroll', onScroll, { passive: true })
+        cleanupFns.push(() => window.removeEventListener('scroll', onScroll))
+      }
+
       // ---- render loop, gated on tab visibility only ------------------
       let running = false
       let rafId = 0
@@ -214,12 +234,13 @@ export function GalaxyBackground({ className = '' }: { className?: string }) {
         const delta = Math.min((now - lastTime) / 1000, 0.1)
         lastTime = now
 
-        uRotation.value += delta * BASE_SPEED
+        uRotation.value += delta * (BASE_SPEED + scrollBoost * SCROLL_BOOST)
+        scrollBoost *= 0.9 // decays back to just the base spin
 
         mouseX += (targetMouseX - mouseX) * 0.04
         mouseY += (targetMouseY - mouseY) * 0.04
-        camera.position.x = mouseX * 0.42
-        camera.position.y = 2.2 - mouseY * 0.26
+        camera.position.x = mouseX * 0.55
+        camera.position.y = 2.2 - mouseY * 0.34 + scrollDrift * SCROLL_PARALLAX
         camera.lookAt(0, 0, 0)
 
         renderer.render(scene, camera)

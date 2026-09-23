@@ -1,22 +1,26 @@
 'use client'
 
 // ========================================
-// CURSOR — fine light trail
+// CURSOR — glowing comet trail
 // ========================================
-// A tiny bright dot with a short, fast-fading trail. A thin ring
-// replaces the glow over links/buttons. The trail's color follows
-// whichever <section> is under the cursor (same 4-color palette as
-// the Agent Library, for visual consistency). Desktop (fine pointer)
-// only — the native cursor stays, and pointer-events are never
-// intercepted, so nothing about clicking or touch scrolling changes.
+// A small glowing core with a comet-style trail of fading, glowing
+// dots (plus the occasional stray "stardust" sparkle) — fits the
+// site's space theme. A thin glowing ring replaces the core over
+// links/buttons. The trail's color follows whichever <section> is
+// under the cursor (same 4-color palette as the Agent Library).
+// Desktop (fine pointer) only — the native cursor stays, and
+// pointer-events are never intercepted, so nothing about clicking or
+// touch scrolling changes.
 
 import { useEffect, useRef } from 'react'
 
-const MAX_POINTS = 14
-const POINT_LIFETIME_MS = 320
+const MAX_POINTS = 16
+const POINT_LIFETIME_MS = 420
+const SPARK_LIFETIME_MS = 650
 const SECTION_COLORS = ['#38bdf8', '#6366f1', '#ffb37a', '#34d399']
 
 type Point = { x: number; y: number; t: number }
+type Spark = { x: number; y: number; t: number; vx: number; vy: number; r: number }
 
 export function CursorTrail() {
   const canvasRef = useRef<HTMLCanvasElement>(null)
@@ -32,14 +36,18 @@ export function CursorTrail() {
     if (!canvas || !ctx) return
 
     let points: Point[] = []
+    let sparks: Spark[] = []
     let mouseX = -9999
     let mouseY = -9999
+    let lastMoveX = -9999
+    let lastMoveY = -9999
     let hovering = false
     let currentColor = SECTION_COLORS[0]
     let lastScrollY = window.scrollY
     let rafId = 0
     let running = false
     let sections: HTMLElement[] = []
+    let sinceLastSpark = 0
 
     function collectSections() {
       sections = Array.from(document.querySelectorAll('section'))
@@ -68,6 +76,26 @@ export function CursorTrail() {
       points.push({ x: mouseX, y: mouseY, t: performance.now() })
       if (points.length > MAX_POINTS) points.shift()
 
+      // Occasionally peel off a little stardust that drifts on its own.
+      const dx = mouseX - lastMoveX
+      const dy = mouseY - lastMoveY
+      const speed = Math.hypot(dx, dy)
+      lastMoveX = mouseX
+      lastMoveY = mouseY
+      if (speed > 6 && sinceLastSpark > 55) {
+        sinceLastSpark = 0
+        const angle = Math.random() * Math.PI * 2
+        sparks.push({
+          x: mouseX,
+          y: mouseY,
+          t: performance.now(),
+          vx: Math.cos(angle) * (0.3 + Math.random() * 0.5),
+          vy: Math.sin(angle) * (0.3 + Math.random() * 0.5) - 0.2,
+          r: 0.8 + Math.random() * 1.1,
+        })
+        if (sparks.length > 24) sparks.shift()
+      }
+
       const target = e.target as Element | null
       hovering = !!target?.closest('a, button, [role="button"], input, select, textarea')
     }
@@ -77,6 +105,7 @@ export function CursorTrail() {
       lastScrollY = window.scrollY
       if (dy !== 0) {
         points = points.map((p) => ({ ...p, y: p.y - dy }))
+        sparks = sparks.map((s) => ({ ...s, y: s.y - dy }))
       }
     }
 
@@ -95,45 +124,59 @@ export function CursorTrail() {
     window.addEventListener('resize', resize)
     window.addEventListener('mouseout', onWindowMouseOut)
 
-    function frame() {
+    function glowDot(x: number, y: number, radius: number, alpha: number, blur: number) {
+      ctx!.globalAlpha = alpha
+      ctx!.shadowColor = currentColor
+      ctx!.shadowBlur = blur
+      ctx!.fillStyle = currentColor
+      ctx!.beginPath()
+      ctx!.arc(x, y, radius, 0, Math.PI * 2)
+      ctx!.fill()
+    }
+
+    function frame(now: number) {
       rafId = requestAnimationFrame(frame)
-      const now = performance.now()
+      sinceLastSpark += 16
       points = points.filter((p) => now - p.t < POINT_LIFETIME_MS)
+      sparks = sparks.filter((s) => now - s.t < SPARK_LIFETIME_MS)
 
       ctx!.clearRect(0, 0, canvas!.width, canvas!.height)
 
-      // Trail: fading segments from oldest to newest.
-      for (let i = 1; i < points.length; i++) {
-        const p0 = points[i - 1]
-        const p1 = points[i]
-        const age = (now - p1.t) / POINT_LIFETIME_MS
-        const alpha = Math.max(0, 1 - age) * 0.35
-        ctx!.strokeStyle = currentColor
-        ctx!.globalAlpha = alpha
-        ctx!.lineWidth = Math.max(0.5, 2.2 * (1 - age))
-        ctx!.lineCap = 'round'
-        ctx!.beginPath()
-        ctx!.moveTo(p0.x, p0.y)
-        ctx!.lineTo(p1.x, p1.y)
-        ctx!.stroke()
+      // Comet trail: glowing dots, oldest (small/faint) to newest.
+      for (let i = 0; i < points.length; i++) {
+        const p = points[i]
+        const age = (now - p.t) / POINT_LIFETIME_MS
+        const life = Math.max(0, 1 - age)
+        glowDot(p.x, p.y, 1 + life * 2.6, life * 0.5, 8 * life)
       }
 
-      // The dot itself (or a thin ring over interactive elements).
+      // Stardust sparkles drifting off the trail.
+      for (const s of sparks) {
+        const age = (now - s.t) / SPARK_LIFETIME_MS
+        const life = Math.max(0, 1 - age)
+        const dt = now - s.t
+        glowDot(s.x + s.vx * dt * 0.06, s.y + s.vy * dt * 0.06, s.r * life, life * 0.7, 6)
+      }
+
+      ctx!.shadowBlur = 0
+
+      // The core dot (or a thin glowing ring over interactive elements).
       if (mouseX > -100) {
-        ctx!.globalAlpha = 1
         if (hovering) {
+          ctx!.globalAlpha = 0.9
+          ctx!.shadowColor = currentColor
+          ctx!.shadowBlur = 10
           ctx!.strokeStyle = currentColor
-          ctx!.lineWidth = 1.4
+          ctx!.lineWidth = 1.5
           ctx!.beginPath()
-          ctx!.arc(mouseX, mouseY, 13, 0, Math.PI * 2)
+          ctx!.arc(mouseX, mouseY, 14, 0, Math.PI * 2)
           ctx!.stroke()
         } else {
-          ctx!.fillStyle = currentColor
-          ctx!.beginPath()
-          ctx!.arc(mouseX, mouseY, 3, 0, Math.PI * 2)
-          ctx!.fill()
+          const pulse = 1 + Math.sin(now * 0.006) * 0.22
+          glowDot(mouseX, mouseY, 2.6 * pulse, 1, 12)
         }
       }
+      ctx!.shadowBlur = 0
       ctx!.globalAlpha = 1
     }
 

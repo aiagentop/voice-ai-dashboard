@@ -5,9 +5,11 @@
 // ========================================
 // Real HTML cards (glassy, glowing in their category color) placed in
 // 3D space with three.js's CSS3DRenderer — same technique as the
-// periodic-table example. Layout auto-cycles sphere <-> helix every
-// 3s, pausing on hover/drag. Dragging only responds to mouse input,
-// so it can never intercept a touch scroll.
+// periodic-table example. The whole group spins continuously, and
+// the layout swaps sphere <-> helix every ~2.5s regardless of
+// hovering/dragging. Dragging only responds to mouse input, so it
+// can never intercept a touch scroll — it just adds extra spin on
+// top of the idle rotation.
 
 import { useEffect, useRef } from 'react'
 import { agentLibrary, agentLibraryCategories, type AgentLibraryCategory } from '@/lib/landing-config'
@@ -15,12 +17,13 @@ import { agentLibrary, agentLibraryCategories, type AgentLibraryCategory } from 
 const LAYOUTS = ['sphere', 'helix'] as const
 type Layout = (typeof LAYOUTS)[number]
 
-const CYCLE_MS = 3000
-const TWEEN_MS = 1200
+const CYCLE_MS = 2500
+const TWEEN_MS = 1100
 const SPHERE_RADIUS = 820
 const HELIX_RADIUS = 820
 const HELIX_Y_STEP = 100
 const HELIX_THETA_STEP = 0.5
+const IDLE_SPIN_SPEED = 0.12 // rad/s — always spinning, cycle or no cycle
 
 export function AgentLibrary({ className = '' }: { className?: string }) {
   const mountRef = useRef<HTMLDivElement>(null)
@@ -145,10 +148,12 @@ export function AgentLibrary({ className = '' }: { className?: string }) {
       resizeObserver.observe(mount)
       cleanupFns.push(() => resizeObserver.disconnect())
 
-      // ---- drag to rotate (mouse only — never intercepts touch) -----
+      // ---- drag adds extra spin on top of the idle rotation (mouse
+      // only — never intercepts touch) ---------------------------------
       let dragging = false
       let lastX = 0
       let lastY = 0
+      let dragPitch = 0
       const ROTATE_SPEED = 0.006
 
       function onPointerDown(e: PointerEvent) {
@@ -156,7 +161,6 @@ export function AgentLibrary({ className = '' }: { className?: string }) {
         dragging = true
         lastX = e.clientX
         lastY = e.clientY
-        pauseCycle()
       }
       function onPointerMove(e: PointerEvent) {
         if (!dragging) return
@@ -165,13 +169,12 @@ export function AgentLibrary({ className = '' }: { className?: string }) {
         lastX = e.clientX
         lastY = e.clientY
         group.rotation.y += dx * ROTATE_SPEED
-        group.rotation.x = Math.max(-0.6, Math.min(0.6, group.rotation.x + dy * ROTATE_SPEED))
+        dragPitch = Math.max(-0.6, Math.min(0.6, dragPitch + dy * ROTATE_SPEED))
+        group.rotation.x = dragPitch
         if (reducedMotion) renderer.render(scene, camera)
       }
       function onPointerUp() {
-        if (!dragging) return
         dragging = false
-        scheduleResume()
       }
       mount.addEventListener('pointerdown', onPointerDown)
       window.addEventListener('pointermove', onPointerMove)
@@ -182,73 +185,50 @@ export function AgentLibrary({ className = '' }: { className?: string }) {
         window.removeEventListener('pointerup', onPointerUp)
       })
 
-      // ---- hover pauses the auto-cycle ------------------------------
-      let hovering = false
-      function onEnter() {
-        hovering = true
-        pauseCycle()
-      }
-      function onLeave() {
-        hovering = false
-        scheduleResume()
-      }
-      mount.addEventListener('mouseenter', onEnter)
-      mount.addEventListener('mouseleave', onLeave)
-      cleanupFns.push(() => {
-        mount.removeEventListener('mouseenter', onEnter)
-        mount.removeEventListener('mouseleave', onLeave)
-      })
-
-      // ---- auto-cycle: sphere <-> helix, every CYCLE_MS --------------
+      // ---- auto-cycle: sphere <-> helix, every CYCLE_MS, always —
+      // never pauses for hover or drag. ---------------------------------
       let layoutIndex = 0
       let cycleTimer: ReturnType<typeof setTimeout> | null = null
-      let resumeTimer: ReturnType<typeof setTimeout> | null = null
-      let cycling = false
 
-      function pauseCycle() {
-        cycling = false
-        if (cycleTimer) clearTimeout(cycleTimer)
-        cycleTimer = null
-        if (resumeTimer) clearTimeout(resumeTimer)
-      }
-      function scheduleResume() {
-        if (resumeTimer) clearTimeout(resumeTimer)
-        resumeTimer = setTimeout(() => {
-          if (!hovering && !dragging) startCycle()
-        }, 600)
-      }
       function tick() {
         cycleTimer = setTimeout(() => {
-          if (hovering || dragging) return
           layoutIndex = (layoutIndex + 1) % LAYOUTS.length
           applyLayout(LAYOUTS[layoutIndex], true)
           tick()
         }, CYCLE_MS)
       }
       function startCycle() {
-        if (cycling || reducedMotion) return
-        cycling = true
+        if (cycleTimer || reducedMotion) return
         tick()
+      }
+      function stopCycle() {
+        if (cycleTimer) clearTimeout(cycleTimer)
+        cycleTimer = null
       }
 
       // ---- render loop, gated on viewport + tab visibility -----------
       let running = false
       let rafId = 0
-      function frame() {
+      let lastTime = performance.now()
+      function frame(now: number) {
         rafId = requestAnimationFrame(frame)
+        const delta = Math.min((now - lastTime) / 1000, 0.1)
+        lastTime = now
+        group.rotation.y += delta * IDLE_SPIN_SPEED
         TWEEN.update()
         renderer.render(scene, camera)
       }
       function start() {
         if (running || disposed) return
         running = true
+        lastTime = performance.now()
         rafId = requestAnimationFrame(frame)
         if (!reducedMotion) startCycle()
       }
       function stop() {
         running = false
         cancelAnimationFrame(rafId)
-        pauseCycle()
+        stopCycle()
       }
 
       if (reducedMotion) {
