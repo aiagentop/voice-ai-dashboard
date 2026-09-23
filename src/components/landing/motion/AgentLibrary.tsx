@@ -18,10 +18,10 @@ const LAYOUTS = ['sphere', 'helix'] as const
 type Layout = (typeof LAYOUTS)[number]
 
 const CYCLE_MS = 2500
-const TWEEN_MS = 1100
-const SPHERE_RADIUS = 820
-const HELIX_RADIUS = 820
-const HELIX_Y_STEP = 100
+const TWEEN_MS = 1000
+const SPHERE_RADIUS = 430
+const HELIX_RADIUS = 430
+const HELIX_Y_STEP = 52
 const HELIX_THETA_STEP = 0.5
 const IDLE_SPIN_SPEED = 0.12 // rad/s — always spinning, cycle or no cycle
 
@@ -47,7 +47,7 @@ export function AgentLibrary({ className = '' }: { className?: string }) {
 
       const scene = new THREE.Scene()
       const camera = new THREE.PerspectiveCamera(50, 1, 1, 6000)
-      camera.position.z = 1650
+      camera.position.z = 900
 
       const renderer = new CSS3DRenderer()
       renderer.domElement.style.position = 'absolute'
@@ -141,7 +141,7 @@ export function AgentLibrary({ className = '' }: { className?: string }) {
         renderer.setSize(clientWidth, clientHeight)
         // Pull the camera back a bit on narrow viewports so nothing clips.
         const isMobile = clientWidth < 640
-        camera.position.z = isMobile ? 2100 : 1650
+        camera.position.z = isMobile ? 1150 : 900
       }
       resize()
       const resizeObserver = new ResizeObserver(resize)

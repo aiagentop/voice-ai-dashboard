@@ -14,9 +14,9 @@ const GalaxyBackground = dynamic(
 
 export function GalaxyBackgroundLoader() {
   return (
-    <div className="fixed inset-0 z-0" aria-hidden>
+    <div className="pointer-events-none fixed inset-0 z-0" aria-hidden>
       <GalaxyBackground />
-      <div className="absolute inset-0 bg-void/55" />
+      <div className="absolute inset-0 bg-void/45" />
     </div>
   )
 }

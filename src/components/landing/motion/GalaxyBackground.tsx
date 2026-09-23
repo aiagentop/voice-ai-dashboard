@@ -31,11 +31,12 @@ const SPIN_STRENGTH = 3.2 // how tightly the arms twist by radius
 const ARM_SPREAD = 0.4 // angular width of each arm
 const RANDOMNESS = 0.55
 const RANDOMNESS_POWER = 3
-const INSIDE_COLOR = '#ffc48a' // warm core
-const OUTSIDE_COLOR = '#5b6bf2' // deep brand blue (~--color-void-accent-2)
+const INSIDE_COLOR = '#ffd199' // warm core, brightened for more vividness
+const OUTSIDE_COLOR = '#7c8bff' // more saturated brand blue/violet (~--color-void-accent-2)
 const BASE_SPEED = 0.045
 const SCROLL_BOOST = 0.00035 // extra spin per px/frame of scroll velocity
-const SCROLL_PARALLAX = 0.45 // max vertical camera drift (world units) from scroll position
+const SCROLL_PARALLAX = 0.75 // max vertical camera drift (world units) from scroll position
+const SCROLL_PARALLAX_X = 0.5 // horizontal camera drift from scroll, for extra depth
 
 export function GalaxyBackground({ className = '' }: { className?: string }) {
   const containerRef = useRef<HTMLDivElement>(null)
@@ -173,7 +174,7 @@ export function GalaxyBackground({ className = '' }: { className?: string }) {
         return mix(insideColor, outsideColor, t)
       })()
 
-      material.scaleNode = attribute('aScale', 'float').mul(isMobile ? 0.108 : 0.13)
+      material.scaleNode = attribute('aScale', 'float').mul(isMobile ? 0.122 : 0.148)
 
       const points = new THREE.Points(geometry, material)
       galaxyGroup.add(points)
@@ -211,6 +212,7 @@ export function GalaxyBackground({ className = '' }: { className?: string }) {
       let lastScrollY = window.scrollY
       let scrollBoost = 0
       let scrollDrift = 0
+      let scrollDriftX = 0
 
       if (!reducedMotion) {
         const onScroll = () => {
@@ -219,6 +221,9 @@ export function GalaxyBackground({ className = '' }: { className?: string }) {
           lastScrollY = y
           scrollBoost += Math.abs(velocity)
           scrollDrift = Math.max(-1, Math.min(1, y * 0.0015))
+          // A slower secondary wave, out of phase with the vertical drift,
+          // so the parallax reads as depth rather than a straight pan.
+          scrollDriftX = Math.sin(y * 0.0009)
         }
         window.addEventListener('scroll', onScroll, { passive: true })
         cleanupFns.push(() => window.removeEventListener('scroll', onScroll))
@@ -239,7 +244,7 @@ export function GalaxyBackground({ className = '' }: { className?: string }) {
 
         mouseX += (targetMouseX - mouseX) * 0.04
         mouseY += (targetMouseY - mouseY) * 0.04
-        camera.position.x = mouseX * 0.55
+        camera.position.x = mouseX * 0.55 + scrollDriftX * SCROLL_PARALLAX_X
         camera.position.y = 2.2 - mouseY * 0.34 + scrollDrift * SCROLL_PARALLAX
         camera.lookAt(0, 0, 0)
 

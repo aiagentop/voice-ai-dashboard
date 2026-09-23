@@ -127,30 +127,50 @@ export const process = [
 ] as const
 
 // ── Use cases by industry ───────────────────────────────────
+// Each entry is illustrative — a pattern the agent handles, not a real
+// customer story or measured result.
 export const useCases = [
   {
     industry: 'Medical / Dental',
     body: 'Answer patient calls, book appointments, handle insurance questions after hours.',
+    painPoint: 'Front desk staff are busy with patients, so calls go to voicemail — and voicemail rarely gets a callback the same day.',
+    solution: 'Agentop answers every line, verifies the patient and reason for the call, and books directly into your scheduling system.',
+    example: 'Example: a patient calls at 7pm to reschedule a cleaning. The agent finds the next open slot and confirms it by text — no message left, no morning callback needed.',
   },
   {
     industry: 'Real Estate',
     body: 'Qualify buyers and sellers, schedule showings, capture leads from property listings.',
+    painPoint: 'Listing calls spike right when you\'re in a showing — the first agent to respond usually wins the lead.',
+    solution: 'Agentop answers instantly, asks qualifying questions (budget, timeline, financing), and schedules a showing on your calendar.',
+    example: 'Example: a caller inquires about a listing from a yard sign. The agent qualifies them and books a showing for Saturday morning while you\'re still with another client.',
   },
   {
     industry: 'Legal',
     body: 'Intake new clients, capture case details, route urgent calls to the right attorney.',
+    painPoint: 'Every new-client call needs the same intake details, and missing that first call often means losing the case to another firm.',
+    solution: 'Agentop runs your intake script, captures case details accurately, and flags urgent matters for immediate attorney follow-up.',
+    example: 'Example: someone calls after a workplace injury. The agent collects the incident details and contact info, then alerts the on-call attorney the same hour.',
   },
   {
     industry: 'Home Services',
     body: 'Book service calls, dispatch technicians, handle quote requests 24/7.',
+    painPoint: 'Emergency calls (a burst pipe, no AC in summer) come in nights and weekends when no one is at the office to answer.',
+    solution: 'Agentop triages the request, captures the address and issue, and books the next available technician slot automatically.',
+    example: 'Example: a homeowner\'s AC fails on a Saturday. The agent captures the address and urgency, then books the first available technician for Monday morning.',
   },
   {
     industry: 'Automotive',
     body: 'Answer sales inquiries, schedule test drives, handle service appointments.',
+    painPoint: 'Sales floor staff can\'t answer the phone while helping a customer, so inbound inquiries about inventory go unanswered.',
+    solution: 'Agentop answers, checks inventory questions against your info, and books a test drive or service appointment on the spot.',
+    example: 'Example: a shopper calls asking if a specific trim is in stock. The agent confirms availability and books a test drive for the next day.',
   },
   {
     industry: 'Restaurants & Hospitality',
     body: 'Take reservations, answer hours and menu questions, handle large-party requests.',
+    painPoint: 'During a dinner rush, no one has a free hand to answer the phone — so reservation calls go straight to a busy signal or voicemail.',
+    solution: 'Agentop takes reservations, answers hours/menu questions, and flags large-party requests for the manager to confirm.',
+    example: 'Example: a caller wants a table for 8 on Friday night. The agent checks your reservation rules for large parties and confirms the booking directly.',
   },
 ] as const
 

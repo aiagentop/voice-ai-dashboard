@@ -165,19 +165,19 @@ body:has(.agentop-landing)::after {
 /* ── Agent Library — glassy CSS3D cards ──────────────────────────── */
 .agentop-card {
   --cat-color: #38bdf8;
-  width: 190px;
-  height: 235px;
+  width: 95px;
+  height: 118px;
   backface-visibility: hidden;
   -webkit-backface-visibility: hidden;
   display: flex;
   flex-direction: column;
   justify-content: space-between;
-  padding: 20px;
-  border-radius: 20px;
+  padding: 10px;
+  border-radius: 12px;
   background: linear-gradient(160deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.02));
-  border: 1.5px solid color-mix(in srgb, var(--cat-color) 50%, transparent);
+  border: 1px solid color-mix(in srgb, var(--cat-color) 50%, transparent);
   box-shadow:
-    0 0 44px color-mix(in srgb, var(--cat-color) 45%, transparent),
+    0 0 22px color-mix(in srgb, var(--cat-color) 45%, transparent),
     inset 0 1px 0 rgba(255, 255, 255, 0.16);
   backdrop-filter: blur(6px);
   -webkit-backdrop-filter: blur(6px);
@@ -187,23 +187,40 @@ body:has(.agentop-landing)::after {
   cursor: grab;
 }
 .agentop-card-n {
-  font-size: 16px;
+  font-size: 8px;
   color: rgba(248, 250, 252, 0.55);
 }
 .agentop-card-symbol {
-  font-size: 52px;
+  font-size: 26px;
   font-weight: 700;
   line-height: 1;
   color: var(--cat-color);
 }
 .agentop-card-name {
-  font-size: 19px;
+  font-size: 10px;
   font-weight: 600;
-  line-height: 1.25;
+  line-height: 1.2;
 }
 .agentop-card-cat {
-  font-size: 13px;
+  font-size: 7px;
   text-transform: uppercase;
-  letter-spacing: 0.08em;
+  letter-spacing: 0.06em;
   color: color-mix(in srgb, var(--cat-color) 80%, white 20%);
+}
+
+/* ── Infinite marquee (TrustBar / Integrations logo strips) ─────── */
+@keyframes agentop-marquee {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-50%);
+  }
+}
+.agentop-marquee-track {
+  display: flex;
+  width: max-content;
+  animation-name: agentop-marquee;
+  animation-timing-function: linear;
+  animation-iteration-count: infinite;
 }
