@@ -14,7 +14,7 @@ export const landingConfig = {
 
   // Genuine placeholders — not real values. See PLACEHOLDER_* below.
   phone: '[PLACEHOLDER_PHONE]',
-  bookingUrl: '[PLACEHOLDER_CALENDLY_URL]',
+  bookingUrl: 'https://calendly.com/eyalecome/30min',
 
   social: {
     linkedin: '',
