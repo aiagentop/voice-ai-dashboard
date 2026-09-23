@@ -5,6 +5,7 @@
 import { cta, landingConfig, isPlaceholder } from '@/lib/landing-config'
 import { ButtonLink } from './ui/Button'
 import { Glow } from './ui/Glow'
+import { CalendlyEmbed } from './CalendlyEmbed'
 
 export function CTA() {
   const hasBooking = !isPlaceholder(landingConfig.bookingUrl)
@@ -21,16 +22,20 @@ export function CTA() {
           Let AI handle the conversations that keep your team busy — and your
           leads waiting.
         </p>
-        <div className="mt-9 flex flex-col justify-center gap-4 sm:flex-row">
+        <div className="mt-9 flex justify-center">
           <ButtonLink href="#demo-form" size="lg">
             {cta.primary}
           </ButtonLink>
-          {hasBooking && (
-            <ButtonLink href={landingConfig.bookingUrl} variant="secondary" size="lg">
-              {cta.booking}
-            </ButtonLink>
-          )}
         </div>
+
+        {hasBooking && (
+          <div className="mt-14 text-left">
+            <p className="mb-4 text-center text-[11px] uppercase tracking-[0.2em] text-void-muted">
+              Or {cta.booking.toLowerCase()}
+            </p>
+            <CalendlyEmbed />
+          </div>
+        )}
       </div>
     </section>
   )
