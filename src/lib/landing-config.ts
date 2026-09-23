@@ -167,6 +167,51 @@ export const integrations = [
   'Slack',
 ] as const
 
+// ── Agent Library — 24 cards, 4 categories, periodic-table style ──
+export const agentLibraryCategories = {
+  agents: { label: 'Agents', color: '#38bdf8' }, // void-accent (cyan)
+  industries: { label: 'Industries', color: '#6366f1' }, // void-accent-2 (indigo)
+  intelligence: { label: 'Intelligence', color: '#ffb37a' }, // warm, ties back to the galaxy core
+  stack: { label: 'Stack', color: '#34d399' }, // emerald
+} as const
+
+export type AgentLibraryCategory = keyof typeof agentLibraryCategories
+
+export const agentLibrary: {
+  n: number
+  symbol: string
+  name: string
+  category: AgentLibraryCategory
+}[] = [
+  { n: 1, symbol: 'AR', name: 'Answering', category: 'agents' },
+  { n: 2, symbol: 'QL', name: 'Qualifying', category: 'agents' },
+  { n: 3, symbol: 'BK', name: 'Booking', category: 'agents' },
+  { n: 4, symbol: 'FU', name: 'Follow-Up', category: 'agents' },
+  { n: 5, symbol: 'OD', name: 'Outbound Demo', category: 'agents' },
+  { n: 6, symbol: 'AH', name: 'After-Hours', category: 'agents' },
+
+  { n: 7, symbol: 'MD', name: 'Medical / Dental', category: 'industries' },
+  { n: 8, symbol: 'RE', name: 'Real Estate', category: 'industries' },
+  { n: 9, symbol: 'LG', name: 'Legal', category: 'industries' },
+  { n: 10, symbol: 'HS', name: 'Home Services', category: 'industries' },
+  { n: 11, symbol: 'AU', name: 'Automotive', category: 'industries' },
+  { n: 12, symbol: 'RH', name: 'Hospitality', category: 'industries' },
+
+  { n: 13, symbol: 'TR', name: 'Transcript', category: 'intelligence' },
+  { n: 14, symbol: 'SE', name: 'Sentiment', category: 'intelligence' },
+  { n: 15, symbol: 'SC', name: 'Lead Score', category: 'intelligence' },
+  { n: 16, symbol: 'RC', name: 'Recording', category: 'intelligence' },
+  { n: 17, symbol: 'CO', name: 'CRM Log', category: 'intelligence' },
+  { n: 18, symbol: 'AN', name: 'Analytics', category: 'intelligence' },
+
+  { n: 19, symbol: 'CA', name: 'Calendar', category: 'stack' },
+  { n: 20, symbol: 'CL', name: 'Calendly', category: 'stack' },
+  { n: 21, symbol: 'TW', name: 'Twilio', category: 'stack' },
+  { n: 22, symbol: 'HG', name: 'GoHighLevel', category: 'stack' },
+  { n: 23, symbol: 'HB', name: 'HubSpot', category: 'stack' },
+  { n: 24, symbol: 'SH', name: 'Sheets', category: 'stack' },
+]
+
 export const trustBarIntegrations = [
   'Retell AI',
   'Make.com',

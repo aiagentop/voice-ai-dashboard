@@ -6,6 +6,7 @@ import { Hero } from '@/components/landing/Hero'
 import { TrustBar } from '@/components/landing/TrustBar'
 import { Problem } from '@/components/landing/Problem'
 import { Services } from '@/components/landing/Services'
+import { AgentLibrarySection } from '@/components/landing/AgentLibrarySection'
 import { VoiceDemo } from '@/components/landing/VoiceDemo'
 import { Outcomes } from '@/components/landing/Outcomes'
 import { Process } from '@/components/landing/Process'
@@ -49,6 +50,7 @@ export default function Home() {
         <TrustBar />
         <Problem />
         <Services />
+        <AgentLibrarySection />
         <VoiceDemo />
         <Outcomes />
         <Process />

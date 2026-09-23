@@ -161,3 +161,47 @@ body:has(.agentop-landing)::after {
     transition-duration: 0.001ms !important;
   }
 }
+
+/* ── Agent Library — glassy CSS3D cards ──────────────────────────── */
+.agentop-card {
+  --cat-color: #38bdf8;
+  width: 108px;
+  height: 138px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: 12px;
+  border-radius: 14px;
+  background: linear-gradient(160deg, rgba(255, 255, 255, 0.09), rgba(255, 255, 255, 0.02));
+  border: 1px solid color-mix(in srgb, var(--cat-color) 45%, transparent);
+  box-shadow:
+    0 0 24px color-mix(in srgb, var(--cat-color) 35%, transparent),
+    inset 0 1px 0 rgba(255, 255, 255, 0.15);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  font-family: Helvetica, Arial, sans-serif;
+  color: #f8fafc;
+  user-select: none;
+  cursor: grab;
+}
+.agentop-card-n {
+  font-size: 11px;
+  color: rgba(248, 250, 252, 0.55);
+}
+.agentop-card-symbol {
+  font-size: 30px;
+  font-weight: 700;
+  line-height: 1;
+  color: var(--cat-color);
+}
+.agentop-card-name {
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 1.25;
+}
+.agentop-card-cat {
+  font-size: 9px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: color-mix(in srgb, var(--cat-color) 80%, white 20%);
+}
