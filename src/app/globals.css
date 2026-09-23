@@ -163,16 +163,21 @@ body:has(.agentop-landing)::after {
 }
 
 /* ── Agent Library — glassy CSS3D cards ──────────────────────────── */
+/* The card sits far enough from the camera that its perspective
+   transform shrinks it a lot — rendering text at native size then
+   shrinking it via a 3D matrix leaves too few source pixels to
+   rasterize cleanly, so it reads blurry. Fix: lay the text out at 2x
+   size/font-size in an inner wrapper, then scale that wrapper down by
+   half. Same on-screen size, but the browser rasterizes from a much
+   higher-resolution source first — a standard supersampling trick for
+   text under CSS 3D transforms. */
 .agentop-card {
   --cat-color: #38bdf8;
   width: 95px;
   height: 118px;
+  overflow: hidden;
   backface-visibility: hidden;
   -webkit-backface-visibility: hidden;
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-  padding: 10px;
   border-radius: 12px;
   background: linear-gradient(160deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.02));
   border: 1px solid color-mix(in srgb, var(--cat-color) 50%, transparent);
@@ -186,23 +191,34 @@ body:has(.agentop-landing)::after {
   user-select: none;
   cursor: grab;
 }
+.agentop-card-inner {
+  width: 200%;
+  height: 200%;
+  transform: scale(0.5);
+  transform-origin: top left;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: 20px;
+}
 .agentop-card-n {
-  font-size: 8px;
+  font-size: 16px;
   color: rgba(248, 250, 252, 0.55);
 }
 .agentop-card-symbol {
-  font-size: 26px;
+  font-size: 52px;
   font-weight: 700;
   line-height: 1;
   color: var(--cat-color);
 }
 .agentop-card-name {
-  font-size: 10px;
+  font-size: 20px;
   font-weight: 600;
   line-height: 1.2;
 }
 .agentop-card-cat {
-  font-size: 7px;
+  font-size: 14px;
   text-transform: uppercase;
   letter-spacing: 0.06em;
   color: color-mix(in srgb, var(--cat-color) 80%, white 20%);

@@ -76,10 +76,12 @@ export function AgentLibrary({ className = '' }: { className?: string }) {
         el.className = 'agentop-card'
         el.style.setProperty('--cat-color', cat.color)
         el.innerHTML = `
-          <div class="agentop-card-n">${item.n}</div>
-          <div class="agentop-card-symbol">${item.symbol}</div>
-          <div class="agentop-card-name">${item.name}</div>
-          <div class="agentop-card-cat">${cat.label}</div>
+          <div class="agentop-card-inner">
+            <div class="agentop-card-n">${item.n}</div>
+            <div class="agentop-card-symbol">${item.symbol}</div>
+            <div class="agentop-card-name">${item.name}</div>
+            <div class="agentop-card-cat">${cat.label}</div>
+          </div>
         `
         const object = new CSS3DObject(el)
         group.add(object)
