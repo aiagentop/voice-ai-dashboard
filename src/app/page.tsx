@@ -1,6 +1,7 @@
 import type { Metadata } from 'next'
 import { landingConfig } from '@/lib/landing-config'
 import { StarFieldLoader } from '@/components/landing/motion/StarFieldLoader'
+import { CursorTrailLoader } from '@/components/landing/motion/CursorTrailLoader'
 import { Navbar } from '@/components/landing/Navbar'
 import { Hero } from '@/components/landing/Hero'
 import { TrustBar } from '@/components/landing/TrustBar'
@@ -44,6 +45,7 @@ export default function Home() {
   return (
     <div className="agentop-landing relative min-h-screen">
       <StarFieldLoader />
+      <CursorTrailLoader />
       <Navbar />
       <main>
         <Hero />

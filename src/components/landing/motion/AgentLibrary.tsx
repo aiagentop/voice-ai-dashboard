@@ -15,16 +15,21 @@ import { agentLibrary, agentLibraryCategories, type AgentLibraryCategory } from 
 const LAYOUTS = ['table', 'sphere', 'helix', 'grid'] as const
 type Layout = (typeof LAYOUTS)[number]
 
-const CYCLE_MS = 4800
+const CYCLE_MS_MIN = 3600
+const CYCLE_MS_MAX = 6800
 const TWEEN_MS = 1400
 const TABLE_COLS = 6
-const COL_SPACING = 130
-const ROW_SPACING = 170
-const SPHERE_RADIUS = 720
-const HELIX_RADIUS = 760
-const HELIX_Y_STEP = 62
+const COL_SPACING = 165
+const ROW_SPACING = 215
+const SPHERE_RADIUS = 900
+const HELIX_RADIUS = 950
+const HELIX_Y_STEP = 78
 const HELIX_THETA_STEP = 0.5
-const GRID_SPACING = 190
+const GRID_SPACING = 240
+
+function nextCycleDelay() {
+  return CYCLE_MS_MIN + Math.random() * (CYCLE_MS_MAX - CYCLE_MS_MIN)
+}
 
 export function AgentLibrary({ className = '' }: { className?: string }) {
   const mountRef = useRef<HTMLDivElement>(null)
@@ -167,7 +172,7 @@ export function AgentLibrary({ className = '' }: { className?: string }) {
         // Pull the camera back on narrow viewports so the widest layouts
         // (sphere/helix) still fit inside the frame.
         const isMobile = clientWidth < 640
-        camera.position.z = isMobile ? 3200 : 2400
+        camera.position.z = isMobile ? 4000 : 3000
       }
       resize()
       const resizeObserver = new ResizeObserver(resize)
@@ -229,12 +234,16 @@ export function AgentLibrary({ className = '' }: { className?: string }) {
       })
 
       // ---- auto-cycle table -> sphere -> helix -> grid -> table ... -
+      // Each gap is a random duration (CYCLE_MS_MIN..MAX) rather than a
+      // fixed interval, so the cycle doesn't feel metronomic.
       let layoutIndex = 0
-      let cycleTimer: ReturnType<typeof setInterval> | null = null
+      let cycleTimer: ReturnType<typeof setTimeout> | null = null
       let resumeTimer: ReturnType<typeof setTimeout> | null = null
+      let cycling = false
 
       function pauseCycle() {
-        if (cycleTimer) clearInterval(cycleTimer)
+        cycling = false
+        if (cycleTimer) clearTimeout(cycleTimer)
         cycleTimer = null
         if (resumeTimer) clearTimeout(resumeTimer)
       }
@@ -244,13 +253,18 @@ export function AgentLibrary({ className = '' }: { className?: string }) {
           if (!hovering && !dragging) startCycle()
         }, 600)
       }
-      function startCycle() {
-        if (cycleTimer || reducedMotion) return
-        cycleTimer = setInterval(() => {
+      function tick() {
+        cycleTimer = setTimeout(() => {
           if (hovering || dragging) return
           layoutIndex = (layoutIndex + 1) % LAYOUTS.length
           applyLayout(LAYOUTS[layoutIndex], true)
-        }, CYCLE_MS)
+          tick()
+        }, nextCycleDelay())
+      }
+      function startCycle() {
+        if (cycling || reducedMotion) return
+        cycling = true
+        tick()
       }
 
       // ---- render loop, gated on viewport + tab visibility -----------
@@ -311,7 +325,7 @@ export function AgentLibrary({ className = '' }: { className?: string }) {
 
   return (
     <div className={`relative ${className}`}>
-      <div ref={mountRef} className="relative h-[560px] w-full sm:h-[620px]" />
+      <div ref={mountRef} className="relative h-[640px] w-full sm:h-[720px]" />
 
       {/* Crawlable/accessible fallback — same content, not visual */}
       <ul className="sr-only">
