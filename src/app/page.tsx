@@ -1,5 +1,6 @@
 import type { Metadata } from 'next'
 import { landingConfig } from '@/lib/landing-config'
+import { StarFieldLoader } from '@/components/landing/motion/StarFieldLoader'
 import { Navbar } from '@/components/landing/Navbar'
 import { Hero } from '@/components/landing/Hero'
 import { TrustBar } from '@/components/landing/TrustBar'
@@ -40,7 +41,8 @@ export const metadata: Metadata = {
 
 export default function Home() {
   return (
-    <div className="agentop-landing min-h-screen">
+    <div className="agentop-landing relative min-h-screen">
+      <StarFieldLoader />
       <Navbar />
       <main>
         <Hero />

@@ -18,8 +18,8 @@
 
 import { useEffect, useRef } from 'react'
 
-const DESKTOP_PARTICLES = 18000
-const MOBILE_PARTICLES = 5000
+const DESKTOP_PARTICLES = 18900
+const MOBILE_PARTICLES = 5250
 const BREAKPOINT = 768
 const ARMS = 3
 const RADIUS = 5
@@ -168,7 +168,7 @@ export function GalaxyBackground({ className = '' }: { className?: string }) {
         return mix(insideColor, outsideColor, t)
       })()
 
-      material.scaleNode = attribute('aScale', 'float').mul(isMobile ? 0.09 : 0.11)
+      material.scaleNode = attribute('aScale', 'float').mul(isMobile ? 0.095 : 0.115)
 
       const points = new THREE.Points(geometry, material)
       galaxyGroup.add(points)
@@ -226,16 +226,16 @@ export function GalaxyBackground({ className = '' }: { className?: string }) {
         const delta = Math.min((now - lastTime) / 1000, 0.1)
         lastTime = now
 
-        const speed = 0.06 * (1 + scrollProgress * 2.5)
+        const speed = 0.06 * (1 + scrollProgress * 2.6)
         uRotation.value += delta * speed
 
         mouseX += (targetMouseX - mouseX) * 0.04
         mouseY += (targetMouseY - mouseY) * 0.04
-        camera.position.x = baseCameraX + mouseX * 0.4
-        camera.position.y = 2.2 - mouseY * 0.25
+        camera.position.x = baseCameraX + mouseX * 0.42
+        camera.position.y = 2.2 - mouseY * 0.26
 
-        camera.position.z = 5.2 - scrollProgress * 1.4
-        galaxyGroup.rotation.x = 0.35 + scrollProgress * 0.35
+        camera.position.z = 5.2 - scrollProgress * 1.47
+        galaxyGroup.rotation.x = 0.35 + scrollProgress * 0.37
         camera.lookAt(baseCameraX, 0, 0)
 
         renderer.render(scene, camera)
