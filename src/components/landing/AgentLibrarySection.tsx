@@ -19,7 +19,7 @@ export function AgentLibrarySection() {
         <SectionHeading
           eyebrow="Agent library"
           title="Every capability, one system"
-          subtitle="Drag to look around. It cycles through a few views on its own — hover or drag to pause."
+          subtitle="Drag to look around. It cycles through a few views on its own."
         />
         <div className="mt-12">
           <AgentLibrary />

@@ -173,8 +173,8 @@ body:has(.agentop-landing)::after {
    text under CSS 3D transforms. */
 .agentop-card {
   --cat-color: #38bdf8;
-  width: 95px;
-  height: 118px;
+  width: 132px;
+  height: 168px;
   overflow: hidden;
   backface-visibility: hidden;
   -webkit-backface-visibility: hidden;
@@ -200,25 +200,25 @@ body:has(.agentop-landing)::after {
   display: flex;
   flex-direction: column;
   justify-content: space-between;
-  padding: 20px;
+  padding: 28px;
 }
 .agentop-card-n {
-  font-size: 16px;
+  font-size: 22px;
   color: rgba(248, 250, 252, 0.55);
 }
 .agentop-card-symbol {
-  font-size: 52px;
+  font-size: 74px;
   font-weight: 700;
   line-height: 1;
   color: var(--cat-color);
 }
 .agentop-card-name {
-  font-size: 20px;
+  font-size: 28px;
   font-weight: 600;
   line-height: 1.2;
 }
 .agentop-card-cat {
-  font-size: 14px;
+  font-size: 20px;
   text-transform: uppercase;
   letter-spacing: 0.06em;
   color: color-mix(in srgb, var(--cat-color) 80%, white 20%);
